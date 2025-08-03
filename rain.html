@@ -1,0 +1,110 @@
+<!DOCTYPE html> size
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>10x10 Acrylic Glowing Rods</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script src="scene.js"></script>
+  </head>
+  <body>
+    <script type="module">
+      import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+      import * as THREE from "three";
+      create_scene(THREE, OrbitControls);
+
+      Number.prototype.clamp = function (min, max) {
+        return Math.min(Math.max(this, min), max);
+      };
+
+      // Function to generate a random bright color
+      function getRandomColor() {
+        const hue = Math.random();
+        return new THREE.Color().setHSL(hue, 1, 0.5);
+      }
+
+      function rand(max) {
+        return Math.floor(Math.random() * max);
+      }
+      function dist(x1, y1, x2, y2) {
+        return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+      }
+
+      let drops = [];
+      for (let i = 0; i < 10; i++) {
+        let d = {};
+        d.x = Math.random() * rodw - 1;
+        d.y = Math.random() * rodh - 1;
+        drops.push(d);
+      }
+
+      function animate() {
+        for (let i = 0; i < rodh; i++) {
+          for (let j = 0; j < rodw; j++) {
+            rods[i][j].sum = 0;
+          }
+        }
+
+        for (let drop of drops) {
+          for (let i = 0; i < rodh; i++) {
+            for (let j = 0; j < rodw; j++) {
+              let addx = i % 2 == 0 ? 0 : 0.5;
+
+              let d = dist(j + addx, i, drop.x, drop.y);
+              let size = 2;
+              if (d <= size) rods[i][j].sum += 1 - d / size;
+            }
+          }
+        }
+
+        for (let i = 0; i < rodh; i++) {
+          for (let j = 0; j < rodw; j++) {
+            //rods[y][x].sum = 0;
+
+            let c = rods[i][j].sum;
+            rods[i][j].material.color = new THREE.Color(c, c, c);
+            rods[i][j].material.emissive = new THREE.Color(c, c, c);
+          }
+        }
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      setInterval(() => {}, 500);
+
+      setInterval(() => {
+        for (let d of drops) {
+          d.y += 0.5;
+          if (d.y > rodh) {
+            d.y -= rodh;
+            d.x = Math.random() * rodw - 1;
+          }
+        }
+      }, 20);
+
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+  </body>
+</html>

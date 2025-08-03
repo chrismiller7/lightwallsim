@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>10x10 Acrylic Glowing Rods</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script src="scene.js"></script>
+  </head>
+  <body>
+    <script type="module">
+      import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+      import * as THREE from "three";
+      create_scene(THREE, OrbitControls);
+
+      let cx = 0;
+      let cy = 0;
+      let cd = 0;
+
+      function getRandomColor() {
+        const hue = Math.random();
+        return new THREE.Color().setHSL(hue, 1, 0.5);
+      }
+
+      function rand(max) {
+        return Math.floor(Math.random() * max);
+      }
+
+      function animate() {
+        for (let i = 0; i < rodh; i++) {
+          for (let j = 0; j < rodw; j++) {
+            let dist = Math.sqrt(Math.pow(i - cy, 2) + Math.pow(j - cx, 2));
+            let color = null;
+            if (Math.abs(dist - cd) > 2) {
+              color = rods[i][j].color;
+            } else {
+              color = new THREE.Color(1.0, 1.0, 1.0);
+            }
+            rods[i][j].material.color = color;
+            rods[i][j].material.emissive = color;
+          }
+        }
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      setInterval(() => {
+        cx = rand(rodw);
+        cy = rand(rodh);
+        cd = 0;
+      }, 500);
+
+      setInterval(() => {
+        cd = cd + 1;
+      }, 20);
+
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+  </body>
+</html>

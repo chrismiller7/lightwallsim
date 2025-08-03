@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>10x10 Acrylic Glowing Rods</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script src="scene.js"></script>
+    <script src="perlin.js"></script>
+  </head>
+  <body>
+    <script type="module">
+      import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+      import * as THREE from "three";
+      create_scene(THREE, OrbitControls);
+
+      Number.prototype.clamp = function (min, max) {
+        return Math.min(Math.max(this, min), max);
+      };
+
+      // Function to generate a random bright color
+      function getRandomColor() {
+        const hue = Math.random();
+        return new THREE.Color().setHSL(hue, 1, 0.5);
+      }
+
+      function rand(max) {
+        return Math.floor(Math.random() * max);
+      }
+
+      function lerp(v) {
+        let c = [];
+        c.push(new THREE.Color(1, 0, 1));
+        c.push(new THREE.Color(0, 1, 1));
+        c.push(new THREE.Color(1, 1, 0));
+
+        if (v <= 0) return c[0];
+        if (v >= 1) return c[c.length - 1];
+
+        for (let i = 0; i < c.length - 1; i++) {
+          let len = 1.0 / (c.length - 1);
+          //console.log("len", v,  i*len, (i+1)*len);
+          if (v >= i * len && v <= (i + 1) * len) {
+            let c1 = c[i];
+            let c2 = c[i + 1];
+            let p = (v - i * len) / len;
+            return c1.lerp(c2, p);
+          } else {
+            console.log(v, i * len, (i + 1) * len);
+          }
+        }
+
+        return new THREE.Color(1, 1, 1);
+      }
+
+      let y = 0;
+      setInterval(() => {
+        y -= 0.005;
+      }, 20);
+
+      let time = 0;
+      function animate() {
+        for (let i = 0; i < rodh; i++) {
+          for (let j = 0; j < rodw; j++) {
+            var v1 = noise.simplex3(j / 10, i / 10 + y, time) / 2 + 0.5;
+            var v2 =
+              noise.simplex3(j / 10 + 20, i / 10 + 20 + y, time) / 2 + 0.5;
+            var v3 =
+              noise.simplex3(j / 10 + 555, i / 10 + 555 + y, time) / 2 + 0.5;
+            time += 0.000015;
+
+            let len = Math.sqrt(v1 * v1 + v2 * v2 + v3 * v3);
+            //console.log(len);
+            //v1 = v1/len*5;
+            //v2 = v2/len*5;
+            //v3 = v3/len*5;
+            let color = null;
+
+            //let c1 = new THREE.Color(1,1,1);
+            //let c2 = new THREE.Color(0,0,1);
+            //color = c1.lerp(c2, (v+1)/2);
+            //if (Math.abs(v-0) < 0.1)
+            //  color = new THREE.Color(1,0,0);
+            //else
+            //  color = new THREE.Color(v,v,v);
+
+            //color = lerp((v+1) / 2);
+            //console.log(v1);
+            color = new THREE.Color(v1, v2, v3);
+            rods[i][j].material.color = color;
+            rods[i][j].material.emissive = color;
+          }
+        }
+
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+  </body>
+</html>
