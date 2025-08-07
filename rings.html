@@ -24,8 +24,8 @@
   </head>
   <body>
     <script type="module">
-      import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
-      import * as THREE from "three";
+      import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+      import * as THREE from 'three';
       create_scene(THREE, OrbitControls);
 
       let cx = 0;
@@ -51,8 +51,7 @@
             } else {
               color = new THREE.Color(1.0, 1.0, 1.0);
             }
-            rods[i][j].material.color = color;
-            rods[i][j].material.emissive = color;
+            rods[i][j].setColor(color);
           }
         }
         requestAnimationFrame(animate);
@@ -72,7 +71,7 @@
         cd = cd + 1;
       }, 20);
 
-      window.addEventListener("resize", () => {
+      window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);

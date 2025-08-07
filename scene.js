@@ -4,12 +4,7 @@ function create_scene(THREE, OrbitControls) {
   globalThis.scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000000);
 
-  const camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-  );
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.set(0, 30, 50);
 
   globalThis.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -42,9 +37,10 @@ function create_scene(THREE, OrbitControls) {
   const height = 5;
   const geometry = new THREE.CylinderGeometry(radius, radius, height, 32);
 
-  const spacing = 2;
-  const offsetX = (rodw * spacing) / 2;
-  const offsetY = (rodh * spacing) / 2;
+  const spacingX = 4;
+  const spacingY = 2.675;
+  const centerX = (rodw * spacingX) / 2;
+  const centerY = (rodh * spacingY) / 2;
 
   for (let i = 0; i < rodh; i++) {
     rods.push([]);
@@ -65,26 +61,72 @@ function create_scene(THREE, OrbitControls) {
         opacity: 0.5,
       });
 
-      let addX = i % 2 == 0 ? 0 : 1;
+      let addX = i % 2 == 0 ? 0 : spacingX / 2;
       const cylinder = new THREE.Mesh(geometry, material);
       cylinder.color = color;
-      cylinder.position.set(
-        j * spacing - offsetX + addX,
-        height / 2,
-        i * spacing - offsetY
-      );
+
+      let posx = j * spacingX - centerX + addX;
+      let posy = i * spacingY - centerY;
+      cylinder.position.set(posx, height / 2, posy);
       scene.add(cylinder);
       rods[i].push(cylinder);
+
+      let blur = createBlur(THREE, color, 0.05);
+      blur.position.set(posx, height, posy);
+      cylinder.blur = blur;
+      scene.add(blur);
+
+      cylinder.setColor = (cc) => {
+        for (let i = 0; i < cylinder.blur.geometry.attributes.color.array.length; i += 4) {
+          cylinder.blur.geometry.attributes.color.array[i + 0] = cc.r;
+          cylinder.blur.geometry.attributes.color.array[i + 1] = cc.g;
+          cylinder.blur.geometry.attributes.color.array[i + 2] = cc.b;
+        }
+        cylinder.blur.geometry.attributes.color.needsUpdate = true;
+        cylinder.material.color = cc;
+        cylinder.material.emissive = cc;
+      };
     }
   }
 
-  window.addEventListener("resize", () => {
+  window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
   globalThis.camera = camera;
   globalThis.rods = rods;
+}
+
+function createBlur(THREE, color, alpha) {
+  const geometry = new THREE.BufferGeometry();
+  let count = 7;
+  let size = 10;
+  let pos = [];
+  let cols = [];
+
+  for (let i = 0; i < count; i += 1) {
+    pos.push(0, 0, 0);
+    cols.push(color.r, color.g, color.b, alpha);
+
+    let len = (Math.PI * 2) / count;
+    pos.push(Math.cos(i * len) * size, 0, Math.sin(i * len) * size);
+    cols.push(color.r, color.g, color.b, 0);
+
+    pos.push(Math.cos((i + 1) * len) * size, 0, Math.sin((i + 1) * len) * size);
+    cols.push(color.r, color.g, color.b, 0);
+  }
+
+  const positions = new Float32Array(pos);
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+  const colors = new Float32Array(cols);
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 4)); // 3 components for RGB
+
+  const material = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, side: 2, depthTest: false });
+
+  const mesh = new THREE.Mesh(geometry, material);
+  return mesh;
 }
 
 globalThis.create_scene = create_scene;

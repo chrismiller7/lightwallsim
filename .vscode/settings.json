@@ -4,5 +4,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "merge-conflict.codeLens.enabled": false,
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "prettier.printWidth": 160,
+  "prettier.singleQuote": true
 }

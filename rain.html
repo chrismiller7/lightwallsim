@@ -24,8 +24,8 @@
   </head>
   <body>
     <script type="module">
-      import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
-      import * as THREE from "three";
+      import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+      import * as THREE from 'three';
       create_scene(THREE, OrbitControls);
 
       Number.prototype.clamp = function (min, max) {
@@ -46,7 +46,7 @@
       }
 
       let drops = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 80; i++) {
         let d = {};
         d.x = Math.random() * rodw - 1;
         d.y = Math.random() * rodh - 1;
@@ -66,19 +66,19 @@
               let addx = i % 2 == 0 ? 0 : 0.5;
 
               let d = dist(j + addx, i, drop.x, drop.y);
-              let size = 2;
-              if (d <= size) rods[i][j].sum += 1 - d / size;
+              let size = 1;
+              let add = 1 - d / size;
+              if (add < 0) add = 0;
+              if (d <= size) rods[i][j].sum += add;
             }
           }
         }
 
         for (let i = 0; i < rodh; i++) {
           for (let j = 0; j < rodw; j++) {
-            //rods[y][x].sum = 0;
-
             let c = rods[i][j].sum;
-            rods[i][j].material.color = new THREE.Color(c, c, c);
-            rods[i][j].material.emissive = new THREE.Color(c, c, c);
+            console.log(c);
+            rods[i][j].setColor(new THREE.Color(c, c, c));
           }
         }
         requestAnimationFrame(animate);
@@ -92,7 +92,7 @@
 
       setInterval(() => {
         for (let d of drops) {
-          d.y += 0.5;
+          d.y += 2.5;
           if (d.y > rodh) {
             d.y -= rodh;
             d.x = Math.random() * rodw - 1;
@@ -100,7 +100,7 @@
         }
       }, 20);
 
-      window.addEventListener("resize", () => {
+      window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
