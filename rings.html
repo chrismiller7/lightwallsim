@@ -32,6 +32,12 @@
       let cy = 0;
       let cd = 0;
 
+      globalThis.onObjectClick = function (rod) {
+        cx = rod.x;
+        cy = rod.y;
+        cd = 0;
+      };
+
       function getRandomColor() {
         const hue = Math.random();
         return new THREE.Color().setHSL(hue, 1, 0.5);
@@ -62,9 +68,9 @@
       animate();
 
       setInterval(() => {
-        cx = rand(rodw);
-        cy = rand(rodh);
-        cd = 0;
+        //cx = rand(rodw);
+        //cy = rand(rodh);
+        //cd = 0;
       }, 500);
 
       setInterval(() => {

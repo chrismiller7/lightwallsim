@@ -1,6 +1,7 @@
 function create_scene(THREE, OrbitControls) {
   let rods = [];
 
+  globalThis.THREE = THREE;
   globalThis.scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000000);
 
@@ -42,6 +43,7 @@ function create_scene(THREE, OrbitControls) {
   const centerX = (rodw * spacingX) / 2;
   const centerY = (rodh * spacingY) / 2;
 
+  globalThis.selectableObjects = [];
   for (let i = 0; i < rodh; i++) {
     rods.push([]);
     for (let j = 0; j < rodw; j++) {
@@ -67,8 +69,11 @@ function create_scene(THREE, OrbitControls) {
 
       let posx = j * spacingX - centerX + addX;
       let posy = i * spacingY - centerY;
+      cylinder.x = j;
+      cylinder.y = i;
       cylinder.position.set(posx, height / 2, posy);
       scene.add(cylinder);
+      selectableObjects.push(cylinder);
       rods[i].push(cylinder);
 
       let blur = createBlur(THREE, color, 0.05);
@@ -83,6 +88,7 @@ function create_scene(THREE, OrbitControls) {
           cylinder.blur.geometry.attributes.color.array[i + 2] = cc.b;
         }
         cylinder.blur.geometry.attributes.color.needsUpdate = true;
+        //cylinder.blur.material.color = cc;
         cylinder.material.color = cc;
         cylinder.material.emissive = cc;
       };
@@ -94,9 +100,30 @@ function create_scene(THREE, OrbitControls) {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
+
+  renderer.domElement.addEventListener(
+    'mousedown',
+    (e) => {
+      getObjectFromPos(e.clientX, e.clientY);
+    },
+    false
+  );
+
   globalThis.camera = camera;
   globalThis.rods = rods;
 }
+
+globalThis.getObjectFromPos = function (mousex, mousey) {
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  pointer.x = (mousex / window.innerWidth) * 2 - 1;
+  pointer.y = -(mousey / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const intersects = raycaster.intersectObjects(selectableObjects, true);
+  if (intersects.length > 0 && onObjectClick) {
+    onObjectClick(intersects[0].object);
+  }
+};
 
 function createBlur(THREE, color, alpha) {
   const geometry = new THREE.BufferGeometry();
