@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>10x10 Acrylic Glowing Rods</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script src="scene.js"></script>
+  </head>
+  <body>
+    <script type="module">
+      import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+      import * as THREE from 'three';
+      create_scene(THREE, OrbitControls);
+
+      let cx = 0;
+      let cy = 0;
+      let cd = 0;
+
+      renderer.domElement.addEventListener(
+        'mousemove',
+        (e) => {
+          let rod = getObjectFromPos(e.clientX, e.clientY);
+          if (rod != null) {
+            rod.selected = 1;
+          }
+        },
+        false
+      );
+
+      function getRandomColor() {
+        const hue = Math.random();
+        return new THREE.Color().setHSL(hue, 1, 0.5);
+      }
+
+      function rand(max) {
+        return Math.floor(Math.random() * max);
+      }
+
+      let i = 0;
+
+      function animate() {
+        for (let i = 0; i < rodh; i++) {
+          for (let j = 0; j < rodw; j++) {
+            let c = Math.random();
+            let white = new THREE.Color(c, c, c);
+            let red = new THREE.Color(1.0, 0, 0);
+            let t = red.lerp(white, rods[i][j].selected);
+            rods[i][j].setColor(t);
+          }
+        }
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      setInterval(() => {
+        for (let i = 0; i < rodh; i++) {
+          for (let j = 0; j < rodw; j++) {
+            if (rods[i][j].selected == null) rods[i][j].selected = 0;
+            else if (rods[i][j].selected > 0) rods[i][j].selected -= 0.1;
+            else rods[i][j].selected = 0;
+          }
+        }
+      }, 200);
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+  </body>
+</html>
