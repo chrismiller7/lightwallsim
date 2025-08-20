@@ -76,22 +76,19 @@ function create_scene(THREE, OrbitControls) {
       selectableObjects.push(cylinder);
       rods[i].push(cylinder);
 
-      let blur = createBlur(THREE, color, 0.05);
+      let blur = createBlur(THREE);
       blur.position.set(posx, height, posy);
       cylinder.blur = blur;
       scene.add(blur);
 
       cylinder.setColor = (cc) => {
-        for (let i = 0; i < cylinder.blur.geometry.attributes.color.array.length; i += 4) {
-          cylinder.blur.geometry.attributes.color.array[i + 0] = cc.r;
-          cylinder.blur.geometry.attributes.color.array[i + 1] = cc.g;
-          cylinder.blur.geometry.attributes.color.array[i + 2] = cc.b;
-        }
-        cylinder.blur.geometry.attributes.color.needsUpdate = true;
-        //cylinder.blur.material.color = cc;
+        cylinder.blur.material.color = cc;
+        cylinder.blur.material.opacity = 0.05;
+
         cylinder.material.color = cc;
         cylinder.material.emissive = cc;
       };
+      cylinder.setColor(color);
     }
   }
 
@@ -120,12 +117,14 @@ globalThis.getObjectFromPos = function (mousex, mousey) {
   pointer.y = -(mousey / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(pointer, camera);
   const intersects = raycaster.intersectObjects(selectableObjects, true);
-  if (intersects.length > 0 && onObjectClick) {
-    onObjectClick(intersects[0].object);
+  if (intersects.length > 0 && globalThis.onObjectClick) {
+    globalThis.onObjectClick(intersects[0].object);
   }
+  if (intersects.length > 0) return intersects[0].object;
+  return null;
 };
 
-function createBlur(THREE, color, alpha) {
+function createBlur(THREE) {
   const geometry = new THREE.BufferGeometry();
   let count = 7;
   let size = 10;
@@ -134,14 +133,14 @@ function createBlur(THREE, color, alpha) {
 
   for (let i = 0; i < count; i += 1) {
     pos.push(0, 0, 0);
-    cols.push(color.r, color.g, color.b, alpha);
+    cols.push(1, 1, 1, 1);
 
     let len = (Math.PI * 2) / count;
     pos.push(Math.cos(i * len) * size, 0, Math.sin(i * len) * size);
-    cols.push(color.r, color.g, color.b, 0);
+    cols.push(1, 1, 1, 0);
 
     pos.push(Math.cos((i + 1) * len) * size, 0, Math.sin((i + 1) * len) * size);
-    cols.push(color.r, color.g, color.b, 0);
+    cols.push(1, 1, 1, 0);
   }
 
   const positions = new Float32Array(pos);
